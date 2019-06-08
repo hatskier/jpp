@@ -38,8 +38,8 @@ fun_call_error = "Trying to call object which is not a function: "
 divide_by_zero = "Trying to divide by zero: "
 
 interpret :: Program -> MyState
-interpret (Program []   ) = Bad empty_program
-interpret (Program stmts) = execState (runStatements stmts) startStateVL
+interpret (ProgramL []   ) = Bad empty_program
+interpret (ProgramL stmts) = execState (runStatements stmts) startStateVL
 
 runFunStatements :: [Stm] -> State MyState Val
 runFunStatements []           = return ValNone
@@ -75,7 +75,7 @@ runStatementHelp stm singleStmRunFunction multiStmRunFunction = do
     case state of
         Bad s -> return ValNone
         _ -> case stm of
-            StmDecl  (Decl t identifiers) -> declareVariables t identifiers
+            StmDecl  (DeclL t identifiers) -> declareVariables t identifiers
             StmBlock stmts                -> do
                 state <- get
                 case state of
@@ -111,7 +111,7 @@ runStatementHelp stm singleStmRunFunction multiStmRunFunction = do
                         val <- singleStmRunFunction stm
                         if (isNone val) then singleStmRunFunction (StmWhile exp stm) else return val
                     else return ValNone
-            StmFor (Decl t idents) exp stmts -> if (length idents /= 1)
+            StmFor (DeclL t idents) exp stmts -> if (length idents /= 1)
                 then do
                     modify $ addError for_error_decl_amount
                     return ValNone
@@ -121,7 +121,7 @@ runStatementHelp stm singleStmRunFunction multiStmRunFunction = do
                     case state of
                         Ok (StateVL env _ _) -> do
                             return ()
-                            singleStmRunFunction (StmDecl (Decl t idents))
+                            singleStmRunFunction (StmDecl (DeclL t idents))
                             if isList valList
                             then
                                 runStatementsForVals (head idents)
@@ -134,15 +134,15 @@ runStatementHelp stm singleStmRunFunction multiStmRunFunction = do
                                     return ValNone
                         Bad s -> return ValNone
             StmFunDef ident args funStmts -> do
-                singleStmRunFunction $ StmDecl $ (Decl (Fun Void [])) [ident]
+                singleStmRunFunction $ StmDecl $ (DeclL (Fun Void [])) [ident]
                 singleStmRunFunction (StmAss ident (EFun args funStmts))
             StmMatch exp caseStmts -> do
                 val <- runExpEvaluation exp
                 case val of
                     ValVar ident valForVar ->
-                        let caseStm = find (\(CaseStm ident2 _ _) -> ident == ident2) caseStmts
+                        let caseStm = find (\(CaseStmL ident2 _ _) -> ident == ident2) caseStmts
                         in  case caseStm of
-                                Just (CaseStm _ ident stmts) -> do
+                                Just (CaseStmL _ ident stmts) -> do
                                     state <- get
                                     case state of
                                         Ok (StateVL env _ _) -> do
@@ -319,13 +319,13 @@ checkDividingByZero exp = do
 
 addFunArgsToScope :: [Arg] -> [Val] -> State MyState ()
 addFunArgsToScope []                         []               = return ()
-addFunArgsToScope ((Arg _ ident) : tailArgs) (val : tailVals) = do
+addFunArgsToScope ((ArgL _ ident) : tailArgs) (val : tailVals) = do
     modify $ addToState ident val
     addFunArgsToScope tailArgs tailVals
 
 runDictDeclEvaluation :: [EDictD] -> State MyState [(Val, Val)]
 runDictDeclEvaluation []                              = return []
-runDictDeclEvaluation ((EDictD expKey expVal) : tail) = do
+runDictDeclEvaluation (EDictDL expKey expVal : tail) = do
     valKey  <- runExpEvaluation expKey
     valVal  <- runExpEvaluation expVal
     tailRes <- runDictDeclEvaluation tail

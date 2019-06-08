@@ -1,3 +1,7 @@
+# Varlang
+
+### Opis nalezy jeszcze dopracować
+
 Aliaksei Suvorau 374118
 
 Opis języka Varlang oraz haskell-owej implementacji interpretera dla niego

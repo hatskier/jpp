@@ -4,7 +4,7 @@
 - Analyze previous response - DONE
 - Create tasks - DONE
 
-- Move to the new grammar (without wanrings) - 1-1.5H
+- Move to the new grammar (without warnings) - 1-1.5H
   - I just need to rename some elements in code
   - Use varlang_new.cf
 

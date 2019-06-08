@@ -1,1 +1,12 @@
 IGNORE
+AbsVarlang.hs
+DocVarlang.txt
+ErrM.hs
+LexVarlang.hs
+LexVarlang.x
+ParVarlang.hs
+ParVarlang.y
+PrintVarlang.hs
+SkelVarlang.hs
+TestVarlang.hs
+varlang_old.cf

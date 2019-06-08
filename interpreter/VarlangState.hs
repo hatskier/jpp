@@ -154,7 +154,7 @@ valToExp val = case val of
     ValFun _ args stmts -> EFun args stmts
     ValList _ l -> EList (map valToExp l)
     ValVar ident val -> EVar ident (valToExp val)
-    ValDict m -> EDict (map (\(k, v) -> EDictD (valToExp k) (valToExp v)) (Data.Map.toList m))
+    ValDict m -> EDict (map (\(k, v) -> EDictDL (valToExp k) (valToExp v)) (Data.Map.toList m))
     _ -> EInt 0
 
 

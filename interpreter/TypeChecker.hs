@@ -44,7 +44,7 @@ eqTypes = [Int, Bool, Char]
 -- FUNCTIONS
 
 checkType :: Program -> CheckStatementResponse
-checkType (Program statements) = checkStatements statements typeCheckerStartState
+checkType (ProgramL statements) = checkStatements statements typeCheckerStartState
 
 checkStatements :: [Stm] -> TypeCheckerState -> CheckStatementResponse
 checkStatements [] state = Ok state
@@ -54,7 +54,7 @@ checkStatements (stm : stmts) state =
 checkStatement :: Stm -> TypeCheckerState -> CheckStatementResponse
 checkStatement stm state = case stm of
     -- TODO LOW in future it should check if variable with the same name was not defined in current head scope
-    StmDecl (Decl t identifiers) -> return (newScope : (tail state))
+    StmDecl (DeclL t identifiers) -> return (newScope : (tail state))
       where
         newScope = foldl insertVar (head state) identifiers
         insertVar scope name = Data.Map.insert name t scope
@@ -84,12 +84,12 @@ checkStatement stm state = case stm of
                     >>= \(_ : res) -> return res
             Bad s -> Bad s
           where
-            argTypes          = map (\(Arg t _) -> t) args
+            argTypes          = map (\(ArgL t _) -> t) args
             stateWithFunction = case funRetType of
                 Found t  -> return $ addFunctionToTypeCheckerState funName t argTypes state
                 NotFound -> return $ addFunctionToTypeCheckerState funName Void argTypes state
                 _        -> Bad $ function_return_conflict ++ (show funRetType)
-            listForMap = map (\(Arg t ident) -> (ident, t)) args
+            listForMap = map (\(ArgL t ident) -> (ident, t)) args
             newState   = addFunctionToTypeCheckerState funName
                                                        Void
                                                        argTypes
@@ -140,7 +140,7 @@ getFunRetTypeForStatement stm state = case stm of
     StmWhile _ stm        -> getFunRetTypeForStatement stm state
     StmFor _ _ stmts      -> getFunRetType stmts state
     StmMatch _ caseStmts ->
-        getFunRetType (foldl (\acc (CaseStm _ _ stmts) -> stmts ++ acc) [] caseStmts) state
+        getFunRetType (foldl (\acc (CaseStmL _ _ stmts) -> stmts ++ acc) [] caseStmts) state
     _ -> NotFound
 
 checkFunStatement :: Stm -> TypeCheckerState -> Err TypeCheckerState
@@ -165,19 +165,19 @@ checkCaseStatementsAndVarDeclarations caseStmts declarations state = if equalIde
                                                state
     else Bad match_statement_identifiers_error
   where
-    identifiersFromStmts        = map (\(CaseStm ident _ _) -> ident) caseStmts
-    identifiersFromDeclarations = map (\(VarD ident t) -> ident) declarations
+    identifiersFromStmts        = map (\(CaseStmL ident _ _) -> ident) caseStmts
+    identifiersFromDeclarations = map (\(VarDL ident t) -> ident) declarations
     equalIdentifiers =
         Data.List.sort identifiersFromStmts == Data.List.sort identifiersFromDeclarations
     checkCaseStatementsAndVarDeclarations [] [] state = return state
-    checkCaseStatementsAndVarDeclarations ((CaseStm ident variable stmts) : stmTail) ((VarD _ t) : declTail) state
-        = checkStatement (StmDecl $ Decl t [variable]) (Data.Map.empty : state) >>= \state ->
+    checkCaseStatementsAndVarDeclarations (CaseStmL ident variable stmts : stmTail) (VarDL _ t : declTail) state
+        = checkStatement (StmDecl $ DeclL t [variable]) (Data.Map.empty : state) >>= \state ->
             checkStatements stmts state >>= \state ->
                 checkCaseStatementsAndVarDeclarations stmTail declTail (tail state)
 
 checkForStatement :: Decl -> Exp -> [Stm] -> TypeCheckerState -> CheckStatementResponse
-checkForStatement (Decl tDecl ident) expList stmts state =
-    checkStatement (StmDecl (Decl tDecl ident)) (Data.Map.empty : state) >>= \state ->
+checkForStatement (DeclL tDecl ident) expList stmts state =
+    checkStatement (StmDecl (DeclL tDecl ident)) (Data.Map.empty : state) >>= \state ->
         getType expList state >>= \t -> compareTypes (List tDecl) t
             >>= \_ -> checkStatements stmts state >>= \state -> return (tail state)
 
@@ -197,7 +197,7 @@ getType exp state = case exp of
     EValTrue                       -> return Bool
     EValFalse                      -> return Bool
     EList exps                     -> checkListType exps state >>= \t -> return $ List t
-    EVar     identifier exp2       -> getType exp2 state >>= \t -> return (Var [VarD identifier t])
+    EVar     identifier exp2       -> getType exp2 state >>= \t -> return (Var [VarDL identifier t])
     EFun     args       statements -> checkFunType args statements state
     EFunCall identifier exps       -> checkFunCallType identifier exps state
     EDict dictDeclarations         -> checkDictType dictDeclarations state
@@ -249,7 +249,7 @@ compareComplexTypes (Var  _ ) (Var  t ) = return (Var t) -- TODO prior LOW - che
 compareComplexTypes (List t1) (List t2) = case (t1, t2) of
     (Void, _   ) -> return (List t2)
     (_   , Void) -> return (List t1)
-    (_   , _   ) -> if t1 == t2 then return List t1 else Bad type_mismatch
+    (_   , _   ) -> if t1 == t2 then return (List t1) else Bad type_mismatch
 compareComplexTypes t1 t2 = compareTypes t1 t2
 
 compareTypes :: Type -> Type -> Err Type
@@ -273,9 +273,9 @@ checkDictGetType identifier keyExp state =
 
 checkDictType :: [EDictD] -> TypeCheckerState -> GetTypeResponse
 checkDictType []                     state = return (Dict Void Void)
-checkDictType [EDictD keyExp valExp] state = getType keyExp state
+checkDictType [EDictDL keyExp valExp] state = getType keyExp state
     >>= \keyType -> getType valExp state >>= \valType -> return (Dict keyType valType)
-checkDictType ((EDictD keyExp valExp) : tail) state = getType keyExp state >>= \keyType ->
+checkDictType (EDictDL keyExp valExp : tail) state = getType keyExp state >>= \keyType ->
     getType valExp state >>= \valType -> checkDictType tail state >>= \(Dict keyType2 valType2) ->
         compareTypes keyType keyType2
             >>= \_ -> compareTypes valType valType2 >>= \_ -> return (Dict keyType valType)
@@ -283,12 +283,12 @@ checkDictType ((EDictD keyExp valExp) : tail) state = getType keyExp state >>= \
 
 checkFunType :: [Arg] -> [Stm] -> TypeCheckerState -> GetTypeResponse
 checkFunType args stmts state = checkFunStatements stmts newState >>= \_ -> case funRetType of
-    Found t  -> return $ Fun t (map (\(Arg t _) -> t) args)
-    NotFound -> return $ Fun Void (map (\(Arg t _) -> t) args)
+    Found t  -> return $ Fun t (map (\(ArgL t _) -> t) args)
+    NotFound -> return $ Fun Void (map (\(ArgL t _) -> t) args)
     _        -> Bad check_fun_type_error
   where
-    argTypes   = map (\(Arg t _) -> t) args
-    listForMap = map (\(Arg t ident) -> (ident, t)) args
+    argTypes   = map (\(ArgL t _) -> t) args
+    listForMap = map (\(ArgL t ident) -> (ident, t)) args
     newState   = (Data.Map.fromList listForMap : state)
     funRetType = getFunRetType stmts newState
 
@@ -311,7 +311,7 @@ checkIsVarType exp identifier state = getType exp state >>= \t -> case t of
         then return Bool
         else Bad (variant_def_not_found ++ (show identifier))
       where
-        exists = foldl (\acc (VarD ident _) -> ident == identifier && acc) False varDeclarations
+        exists = foldl (\acc (VarDL ident _) -> ident == identifier && acc) False varDeclarations
     _ -> Bad $ type_mismatch ++ "is not a variant"
 
 checkListType :: [Exp] -> TypeCheckerState -> GetTypeResponse
