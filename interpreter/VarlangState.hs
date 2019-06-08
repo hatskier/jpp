@@ -183,17 +183,6 @@ getValType x = case x of
     ValDict _    -> Dict Void Void
     ValVar _ _   -> Var []
 
--- TODO alex remove
--- getPossibleFunStmts :: Stm -> [Stm]
--- getPossibleFunStmts stm = case stm of
---     StmBlock stmts        -> stmts
---     StmIf _ stm           -> [stm]
---     StmIfElse _ stm1 stm2 -> [stm1, stm2]
---     StmWhile _ stm        -> [stm]
---     StmFor _ _ stmts      -> stmts
---     StmMatch _ _          -> []
---     _                     -> []
-
 valIntOperation :: (Int -> Int -> Int) -> IntValOperation
 valIntOperation fun int2 (ValInt int) = ValInt (fun int int2)
 

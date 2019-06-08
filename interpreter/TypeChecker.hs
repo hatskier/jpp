@@ -160,11 +160,6 @@ checkFunStatement stm state = case stm of
     RetStm _   -> Ok state
     RetVoidStm -> Ok state
     _          -> checkStatement stm state
--- TODO alex remove
--- checkFunStatement funStm state = case getPossibleFunStmts funStm of
---     []    -> Ok state
---     [stm] -> checkStatement stm state
---     stmts -> checkFunStatements stmts state
 
 checkBoolExpWithStm :: Exp -> Stm -> TypeCheckerState -> CheckStatementResponse
 checkBoolExpWithStm exp stmt state = getType exp state >>= \expType ->
