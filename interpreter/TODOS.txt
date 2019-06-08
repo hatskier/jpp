@@ -1,0 +1,51 @@
+- Add .gitignore - DONE
+- Find or create test script - DONE
+- Check if grammar is correct - DONE
+- Analyze previous response - DONE
+- Create tasks - DONE
+
+- Move to the new grammar (without wanrings) - 1-1.5H
+  - I just need to rename some elements in code
+  - Use varlang_new.cf
+
+- Make error messages more readable - 1-2H
+  - Show what function failed, add location printing, not only 'Type mismatch' message (bad/badArgs.vl)
+
+- Fixes in typechecker - 2.5H
+  - void argument decalaration (should be impossible) - 1H
+  - the same name args - 1H
+  - add example with function (ret type int) and assignment to vars with different types - 0.5H
+
+- Fix the following code (it goes throw TypeChecker) - 1H
+  !! Analyse what should be done in the following code
+  function rec(int x) {
+              if (x > 1) {
+                  print('a');
+                  return rec(x - 1);
+              } else {return 3;}
+          };
+  int x;
+  print(rec(10)); // <- It prints ValVoid
+
+- Lists - 1H
+  - add append, head and tail functions
+
+- Dicts - 1H
+  - add set function
+
+- Variables and context 2-5H
+  - Add more examples - 1H
+    - more info in mail (nr 9)
+  - Make examples work - 1H
+  - Fix static binding - 3H
+
+
+- Potential
+  - Use normal state instead of [{}, {}] - 4-6H
+  - Add more examples for functions
+    - More info in mail (nr 5)
+  - Variants
+    - testVariant(testVar3); should raise a dynamic error
+
+
+Done :) - Not yet ;)
