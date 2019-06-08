@@ -33,7 +33,7 @@ debug_param = "--DEBUG"
 type_checked = "Type was successfully checked. The main scope is: "
 program_finished = "Program finished successfully: "
 files_not_passed = "Please pass filenames in arguments: "
-program_error = "Program error: "
+program_runtime_error = "Program runtime error: "
 
 main :: IO ()
 main = do
@@ -42,7 +42,7 @@ main = do
         [] -> hPutStrLn stderr files_not_passed
         _ ->
             let checker (isDebug, names) s =
-                    if (s == debug_param) then (True, names) else (isDebug, s : names)
+                    if s == debug_param then (True, names) else (isDebug, s : names)
                 (isDebug, names) = foldl checker (False, []) args
             in  mapM_ (\f -> readFile f >>= calc isDebug) names
 
@@ -52,14 +52,14 @@ calc isDebug s = case pProgram $ myLexer s of
     Ok  tree -> case checkType tree of
         Bad s -> hPutStrLn stderr s
         Ok st ->
-            printDebug isDebug (type_checked ++ (show st))
+            printDebug isDebug (type_checked ++ show st)
                 >> printDebug isDebug "Interpreting started"
-                >> case (interpret tree) of
-                       Bad s -> hPutStrLn stderr (program_error ++ s)
+                >> case interpret tree of
+                       Bad s -> hPutStrLn stderr (program_runtime_error ++ s)
                        Ok (StateVL _ _ (HelpVars _ strsToPrint)) -> do
                            mapM_ (hPutStr stdout) (reverse strsToPrint)
                            printDebug isDebug
-                                      (program_finished ++ " | current state: " ++ (show st))
+                                      (program_finished ++ " | current state: " ++ show st)
 
 
 printDebug :: Bool -> String -> IO ()

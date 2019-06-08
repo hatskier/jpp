@@ -1,0 +1,7 @@
+function test(int x) {
+  if (x > 12) {
+    return "Some string";
+  } else {
+    return "Some int";
+  }
+};

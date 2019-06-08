@@ -1,0 +1,5 @@
+function test(int a, int b) {
+  print(a + b);
+};
+
+test(10, 12, 14);

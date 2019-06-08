@@ -11,7 +11,9 @@ import           Data.Map                       ( Map
 import           Data.List                      ( sort
                                                 , find
                                                 )
-
+import           Data.Set                       ( Set
+                                                , fromList
+                                                )
 import           AbsVarlang
 import           VarlangState
 import           ErrM
@@ -27,6 +29,8 @@ type CheckFunStatementResponse = Err TypeCheckerState
 
 -- constant strings for messages
 type_mismatch = "Type mismatch: "
+function_not_declared_correctly = "Function is not declared correctly: "
+function_redefinition = "Function with this name is already defined"
 binary_operation_type_not_allowed = "This type is not allowed in this binary operation"
 variable_redefenition = "Variable already was defined: "
 variant_empty = "Variant can not be empty: "
@@ -36,6 +40,10 @@ match_statment_not_var = "Trying to apply match statement to object which is not
 match_statement_identifiers_error = "There is error in match identifiers statement"
 function_return_conflict = "Function definition has conflict beacause of different return types"
 check_fun_type_error = "Error in func type checking"
+function_cant_have_void_args = ": function can not have void arguments"
+repeated_arg_names = ": function can not have arguments with repeated names"
+too_many_args = ": too many arguments"
+too_few_args = ": too few arguments"
 
 -- help variables
 typeCheckerStartState = [Data.Map.empty]
@@ -53,8 +61,7 @@ checkStatements (stm : stmts) state =
 
 checkStatement :: Stm -> TypeCheckerState -> CheckStatementResponse
 checkStatement stm state = case stm of
-    -- TODO LOW in future it should check if variable with the same name was not defined in current head scope
-    StmDecl (DeclL t identifiers) -> return (newScope : (tail state))
+    StmDecl (DeclL t identifiers) -> return (newScope : tail state)
       where
         newScope = foldl insertVar (head state) identifiers
         insertVar scope name = Data.Map.insert name t scope
@@ -68,7 +75,7 @@ checkStatement stm state = case stm of
                 getType exp2 state
                     >>= \t2 -> compareTypes t1 keyType
                             >>= \_ -> compareTypes t2 valType >>= \_ -> return state
-            _ -> Bad $ type_mismatch ++ "Dictionary " ++ (show identifier)
+            _ -> Bad $ type_mismatch ++ "Dictionary " ++ show identifier
     StmIf exp stm               -> checkBoolExpWithStm exp stm state
     StmIfElse exp stmIf stmElse -> getType exp state >>= \expType ->
         compareTypes expType Bool
@@ -76,24 +83,29 @@ checkStatement stm state = case stm of
                     >>= \_ -> checkStatement stmElse state >>= \_ -> return state
     StmWhile exp stm -> checkBoolExpWithStm exp stm state
     StmFor forDeclaration expList stmts -> checkForStatement forDeclaration expList stmts state
-    StmFunDef (Ident funName) args stmts -> case (Data.Map.lookup (Ident funName) (head state)) of
-        Just _  -> Bad (variable_redefenition ++ funName)
-        Nothing -> case stateWithFunction of
-            Ok newStateWithFunction ->
-                checkFunStatements stmts ((Data.Map.fromList listForMap) : newStateWithFunction)
+    StmFunDef (Ident funName) args stmts -> case Data.Map.lookup (Ident funName) (head state) of
+        Just _  -> Bad ( function_redefinition ++ funName)
+        Nothing -> case (voidArgs, hasDuplicatedArgs, stateWithFunction) of
+            ([], False, Ok newStateWithFunction) ->
+                checkFunStatements stmts (Data.Map.fromList listForMap : newStateWithFunction)
                     >>= \(_ : res) -> return res
-            Bad s -> Bad s
+            ([], False, Bad s) -> Bad s
+            (_, True, _) -> Bad $ function_not_declared_correctly ++ show funName ++ repeated_arg_names
+            (_, _, _) -> Bad $ function_not_declared_correctly ++ show funName ++ function_cant_have_void_args
           where
+            argNames          = map (\(ArgL _ n) -> n) args
+            hasDuplicatedArgs = length argNames /= length (Data.Set.fromList argNames)
             argTypes          = map (\(ArgL t _) -> t) args
+            voidArgs          = filter (== Void) argTypes
             stateWithFunction = case funRetType of
                 Found t  -> return $ addFunctionToTypeCheckerState funName t argTypes state
                 NotFound -> return $ addFunctionToTypeCheckerState funName Void argTypes state
-                _        -> Bad $ function_return_conflict ++ (show funRetType)
+                _        -> Bad $ function_return_conflict ++ show funRetType
             listForMap = map (\(ArgL t ident) -> (ident, t)) args
             newState   = addFunctionToTypeCheckerState funName
                                                        Void
                                                        argTypes
-                                                       ((Data.Map.fromList listForMap) : state)
+                                                       (Data.Map.fromList listForMap : state)
             funRetType = getFunRetType stmts newState
     StmMatch exp caseStmts -> checkMatchStatement exp caseStmts state
     StmPrint   exp         -> getType exp state >> return state
@@ -130,9 +142,9 @@ chooseBetterType t1 t2 = case (t1, t2) of
 
 getFunRetTypeForStatement :: Stm -> TypeCheckerState -> FunRetType
 getFunRetTypeForStatement stm state = case stm of
-    RetStm exp -> case (getType exp state) of
+    RetStm exp -> case getType exp state of
         Ok  t -> Found t
-        Bad s -> BadErr $ s ++ (show exp)
+        Bad s -> BadErr $ s ++ show exp
     RetVoidStm            -> Found Void
     StmBlock stmts        -> getFunRetType stmts state
     StmIf _ stm           -> getFunRetTypeForStatement stm state
@@ -143,10 +155,16 @@ getFunRetTypeForStatement stm state = case stm of
         getFunRetType (foldl (\acc (CaseStmL _ _ stmts) -> stmts ++ acc) [] caseStmts) state
     _ -> NotFound
 
-checkFunStatement :: Stm -> TypeCheckerState -> Err TypeCheckerState
-checkFunStatement funStm state = case getPossibleFunStmts funStm of
-    []    -> Ok state
-    stmts -> checkFunStatements stmts state
+checkFunStatement :: Stm -> TypeCheckerState -> CheckFunStatementResponse
+checkFunStatement stm state = case stm of
+    RetStm _   -> Ok state
+    RetVoidStm -> Ok state
+    _          -> checkStatement stm state
+-- TODO alex remove
+-- checkFunStatement funStm state = case getPossibleFunStmts funStm of
+--     []    -> Ok state
+--     [stm] -> checkStatement stm state
+--     stmts -> checkFunStatements stmts state
 
 checkBoolExpWithStm :: Exp -> Stm -> TypeCheckerState -> CheckStatementResponse
 checkBoolExpWithStm exp stmt state = getType exp state >>= \expType ->
@@ -242,7 +260,8 @@ multiCompareComplexTypes []           []           = Ok ()
 multiCompareComplexTypes (t1 : tail1) (t2 : tail2) = do
     _ <- compareComplexTypes t1 t2
     multiCompareComplexTypes tail1 tail2
-multiCompareComplexTypes _ _ = Bad type_mismatch
+multiCompareComplexTypes [] _ = Bad too_many_args
+multiCompareComplexTypes _ [] = Bad too_few_args
 
 compareComplexTypes :: Type -> Type -> Err Type
 compareComplexTypes (Var  _ ) (Var  t ) = return (Var t) -- TODO prior LOW - check for the ident
@@ -282,22 +301,40 @@ checkDictType (EDictDL keyExp valExp : tail) state = getType keyExp state >>= \k
 
 
 checkFunType :: [Arg] -> [Stm] -> TypeCheckerState -> GetTypeResponse
-checkFunType args stmts state = checkFunStatements stmts newState >>= \_ -> case funRetType of
-    Found t  -> return $ Fun t (map (\(ArgL t _) -> t) args)
-    NotFound -> return $ Fun Void (map (\(ArgL t _) -> t) args)
-    _        -> Bad check_fun_type_error
+checkFunType args stmts state = checkFunStatements stmts newState >>= \_ -> case (voidArgs, funRetType) of
+    ([], Found t)  -> return $ Fun t (map (\(ArgL t _) -> t) args)
+    ([], NotFound) -> return $ Fun Void (map (\(ArgL t _) -> t) args)
+    ([], _)        -> Bad check_fun_type_error
+    (_, _)         -> Bad $ check_fun_type_error
+                          ++ function_cant_have_void_args
+    
   where
     argTypes   = map (\(ArgL t _) -> t) args
+    voidArgs   = filter (\(ArgL t _) -> t == Void) args
     listForMap = map (\(ArgL t ident) -> (ident, t)) args
-    newState   = (Data.Map.fromList listForMap : state)
+    newState   = Data.Map.fromList listForMap : state
     funRetType = getFunRetType stmts newState
+
+multiCompareComplexTypesForFunArgs :: [Type] -> [Type] -> String -> String -> Err ()
+multiCompareComplexTypesForFunArgs argTypes1 argTypes2 errPrefix errPostfix =
+    case multiCompareComplexTypes argTypes1 argTypes2 of
+        Bad errMsg -> Bad $ errPrefix ++ errMsg ++ errPostfix
+        _ -> Ok ()
+
+printIdent :: Ident -> String
+printIdent (Ident name) = show name
 
 checkFunCallType :: Ident -> [Exp] -> TypeCheckerState -> GetTypeResponse
 checkFunCallType identifier exps state = getTypeForVariable identifier state >>= \funType ->
     case funType of
         Fun returnType argTypes -> getExpTypes exps state
-            >>= \argTypes2 -> multiCompareComplexTypes argTypes argTypes2 >> return returnType
-        _ -> Bad $ type_mismatch ++ (show identifier) ++ " is not a function"
+            >>= \argTypes2 -> multiCompareComplexTypesForFunArgs
+                argTypes
+                argTypes2
+                "Function arguments "
+                (" in function: " ++ printIdent identifier)
+            >> return returnType
+        _ -> Bad $ type_mismatch ++ show identifier ++ " is not a function"
 
 
 getExpTypes :: [Exp] -> TypeCheckerState -> Err [Type]

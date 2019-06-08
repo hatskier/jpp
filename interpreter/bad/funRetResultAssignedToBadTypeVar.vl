@@ -1,0 +1,9 @@
+int z;
+
+function trippleSum(int a, int b, int c) {
+  z = a + b + c;
+  return z;
+};
+
+char x;
+x = trippleSum(1, 2, 3);

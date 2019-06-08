@@ -1,0 +1,4 @@
+function test(int a) {
+  int x;
+  x = a + b; // It must raise a type error
+};

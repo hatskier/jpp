@@ -1,0 +1,3 @@
+function test(void a, int b) {
+	print(b);
+};

@@ -16,6 +16,7 @@ import           System.IO                      ( stderr
                                                 , hPutStrLn
                                                 )
 import           Control.Monad.State.Lazy
+import           Control.Monad
 
 import           AbsVarlang
 import           VarlangState
@@ -43,22 +44,18 @@ interpret (ProgramL stmts) = execState (runStatements stmts) startStateVL
 
 runFunStatements :: [Stm] -> State MyState Val
 runFunStatements []           = return ValNone
-runFunStatements (stm : tail) = do
-    case stm of
-        RetStm exp -> runExpEvaluation exp
-        RetVoidStm -> return ValVoid
-        stm        -> do
-            val <- runFunStatement stm
-            if (val == ValNone) then runFunStatements tail else return val
+runFunStatements (stm : tail) = case stm of
+    RetStm exp -> runExpEvaluation exp
+    RetVoidStm -> return ValVoid
+    stm        -> do
+        val <- runFunStatement stm
+        if val == ValNone then runFunStatements tail else return val
 
 runFunStatement :: Stm -> State MyState Val
-runFunStatement stm = do
-    case stm of
-        RetVoidStm -> return ValVoid
-        RetStm exp -> do
-            val <- runExpEvaluation exp
-            return val
-        _ -> runStatementHelp stm runFunStatement runFunStatements
+runFunStatement stm = case stm of
+    RetVoidStm -> return ValVoid
+    RetStm exp -> runExpEvaluation exp
+    _ -> runStatementHelp stm runFunStatement runFunStatements
 
 
 runStatements :: [Stm] -> State MyState Val
@@ -98,20 +95,20 @@ runStatementHelp stm singleStmRunFunction multiStmRunFunction = do
                 return ValNone
             StmIf exp stm -> do
                 valCond <- runExpEvaluation exp
-                if (valCond == ValBool True) then singleStmRunFunction stm else return ValNone
+                if valCond == ValBool True then singleStmRunFunction stm else return ValNone
             StmIfElse exp stmIf stmElse -> do
                 valCond <- runExpEvaluation exp
-                if (valCond == ValBool True)
+                if valCond == ValBool True
                     then singleStmRunFunction stmIf
                     else singleStmRunFunction stmElse
             StmWhile exp stm -> do
                 valCond <- runExpEvaluation exp
-                if (valCond == ValBool True)
+                if valCond == ValBool True
                     then do
                         val <- singleStmRunFunction stm
-                        if (isNone val) then singleStmRunFunction (StmWhile exp stm) else return val
+                        if isNone val then singleStmRunFunction (StmWhile exp stm) else return val
                     else return ValNone
-            StmFor (DeclL t idents) exp stmts -> if (length idents /= 1)
+            StmFor (DeclL t idents) exp stmts -> if length idents /= 1
                 then do
                     modify $ addError for_error_decl_amount
                     return ValNone
@@ -120,7 +117,7 @@ runStatementHelp stm singleStmRunFunction multiStmRunFunction = do
                     state   <- get
                     case state of
                         Ok (StateVL env _ _) -> do
-                            return ()
+                            -- return ()
                             singleStmRunFunction (StmDecl (DeclL t idents))
                             if isList valList
                             then
@@ -130,12 +127,12 @@ runStatementHelp stm singleStmRunFunction multiStmRunFunction = do
                                                      multiStmRunFunction
                             else
                                 do
-                                    modify $ addError $ for_statement_not_for_list ++ (show valList)
+                                    modify $ addError $ for_statement_not_for_list ++ show valList
                                     return ValNone
                         Bad s -> return ValNone
             StmFunDef ident args funStmts -> do
-                singleStmRunFunction $ StmDecl $ (DeclL (Fun Void [])) [ident]
-                singleStmRunFunction (StmAss ident (EFun args funStmts))
+                singleStmRunFunction $ StmDecl $ DeclL (Fun Void []) [ident]
+                singleStmRunFunction $ StmAss ident (EFun args funStmts)
             StmMatch exp caseStmts -> do
                 val <- runExpEvaluation exp
                 case val of
@@ -177,7 +174,7 @@ runStatementsForVals _     []           _     _                   = return ValNo
 runStatementsForVals ident (val : tail) stmts multiStmRunFunction = do
     modify (changeValInState ident val)
     val <- multiStmRunFunction stmts
-    if (isNone val) then runStatementsForVals ident tail stmts multiStmRunFunction else return val
+    if isNone val then runStatementsForVals ident tail stmts multiStmRunFunction else return val
 
 
 revertState :: Env -> State MyState ()
@@ -194,8 +191,7 @@ runDictAssigning ident valKey valVal = do
         ValDict d -> do
             let newDictVal = ValDict (Data.Map.insert valKey valVal d)
             modify $ changeValInState ident newDictVal
-        _ -> do
-            modify $ addError error_in_dict_assigning
+        _ -> modify $ addError error_in_dict_assigning
 
 runExpsEvaluation :: [Exp] -> State MyState [Val]
 runExpsEvaluation []           = return []
@@ -233,7 +229,7 @@ runExpEvaluation exp = do
             EVar ident exp -> do
                 val <- runExpEvaluation exp
                 return $ ValVar ident val
-            EFun args funStmts -> do
+            EFun args funStmts ->
                 return $ ValFun Void args funStmts
             EFunCall ident exps -> do
                 valFun <- runExpEvaluation (EVariable ident)
@@ -250,7 +246,7 @@ runExpEvaluation exp = do
                                     _       -> return res
                             Bad s -> return ValVoid
                     _ -> do
-                        modify $ addError $ fun_call_error ++ (show ident)
+                        modify $ addError $ fun_call_error ++ show ident
                         return ValVoid
             EDict dictDeclarations -> do
                 dictVals <- runDictDeclEvaluation dictDeclarations
@@ -273,21 +269,21 @@ runExpEvaluation exp = do
                 case val of
                     ValVar ident2 val -> return $ ValBool (ident2 == ident)
                     _                 -> do
-                        modify $ addError $ not_var_for_is_exp ++ (show exp)
+                        modify $ addError $ not_var_for_is_exp ++ show exp
                         return ValVoid
             ENeg exp -> do
                 val <- runExpEvaluation exp
                 case val of
                     ValInt i -> return $ ValInt (-i)
                     _        -> do
-                        modify $ addError $ is_not_int ++ (show val)
+                        modify $ addError $ is_not_int ++ show val
                         return ValVoid
             ENot exp -> do
                 val <- runExpEvaluation exp
                 case val of
                     ValBool p -> return $ ValBool (not p)
                     _         -> do
-                        modify $ addError $ is_not_bool ++ (show val)
+                        modify $ addError $ is_not_bool ++ show val
                         return ValVoid
             EMul exp1 exp2 -> runBinaryIntValEvaluation exp1 exp2 (*)
             EDiv exp1 exp2 -> do
@@ -313,13 +309,14 @@ runExpEvaluation exp = do
 checkDividingByZero :: Exp -> State MyState ()
 checkDividingByZero exp = do
     val <- runExpEvaluation exp
-    if (val == ValInt 0)
-        then put (Bad divide_by_zero)
-        else return ()
+    Control.Monad.when (val == ValInt 0) $ put (Bad divide_by_zero)
+    -- if val == ValInt 0 
+    --     then put (Bad divide_by_zero)
+    --     else return ()
 
 addFunArgsToScope :: [Arg] -> [Val] -> State MyState ()
 addFunArgsToScope []                         []               = return ()
-addFunArgsToScope ((ArgL _ ident) : tailArgs) (val : tailVals) = do
+addFunArgsToScope (ArgL _ ident : tailArgs) (val : tailVals) = do
     modify $ addToState ident val
     addFunArgsToScope tailArgs tailVals
 
@@ -344,7 +341,7 @@ runBinaryBoolValEvaluation exp1 exp2 funChange = do
     case (val1, val2) of
         (ValBool p1, ValBool p2) -> return $ ValBool (funChange p1 p2)
         _                        -> do
-            modify $ addError $ error_in_binary_bool_evaluation
+            modify $ addError error_in_binary_bool_evaluation
             return ValVoid
 
 runBinaryIntValEvaluation :: Exp -> Exp -> (Int -> Int -> Int) -> State MyState Val
@@ -354,7 +351,7 @@ runBinaryIntValEvaluation exp1 exp2 funChange = do
     case (val1, val2) of
         (ValInt i1, ValInt i2) -> return $ ValInt (funChange i1 i2)
         _                      -> do
-            modify $ addError $ error_in_binary_int_evaluation
+            modify $ addError error_in_binary_int_evaluation
             return ValVoid
 
 
