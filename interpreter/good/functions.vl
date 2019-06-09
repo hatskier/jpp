@@ -64,3 +64,43 @@ rectangleLength = testRectangleLength(3, 4);
 print("It should print 14: ");
 print(rectangleLength);
 print("\n");
+
+// Returns in blocks
+function testFoo(int x) {
+	if (x > 10) {
+		print("------YEAAHHH-------");
+		return 123;
+	}
+};
+
+// function testFoo(int x) {
+// 	if (x > 10) {
+// 		return 123;
+// 	} else {
+// 		return 0;
+// 	}
+// };
+
+print("It should print 123: ");
+print(testFoo(11));
+print("\n");
+print("It should print 0: ");
+print(testFoo(1));
+print("\n");
+
+// TODO add some recursion tests
+print("Recursion test\n");
+// function rec(int x) {
+// 	if (x > 1) {
+// 			print('a');
+// 			int s;
+// 			// s = rec(x - 1);
+// 			// return rec(x - 1);
+// 			return 10;
+// 	} else {
+// 		return 3;
+// 	}
+// };
+// // int x;
+// print(rec(10));
+// print(x); // <- It prints ValVoid

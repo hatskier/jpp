@@ -58,7 +58,7 @@ startStateVL = Ok (StateVL Data.Map.empty Data.Map.empty (HelpVars 0 []))
 -- Functions
 addError :: String -> MyState -> MyState
 addError msg state = case state of
-    Ok  state -> Bad $ "last state before error: " ++ (show state) ++ "|||" ++ msg
+    Ok  state -> Bad $ "last state before error: " ++ show state ++ "|||" ++ msg
     Bad s     -> Bad $ s ++ "|||" ++ msg
 
 addToState :: Ident -> Val -> MyState -> MyState
@@ -68,13 +68,13 @@ addToState ident val state = case state of
         _       -> Ok $ StateVL (insert ident newLoc env) (insert newLoc val vals) newHelpVars
           where
             newLoc      = lastLoc + 1
-            newHelpVars = (HelpVars newLoc printQueue)
+            newHelpVars = HelpVars newLoc printQueue
     Bad s -> Bad s
 
 getValFromState :: Ident -> MyState -> (Val, MyState)
-getValFromState ident state = case (tryToGetValFromState ident state) of
+getValFromState ident state = case tryToGetValFromState ident state of
     Just val -> (val, state)
-    Nothing  -> (ValVoid, addError (variable_not_found ++ (show ident)) state)
+    Nothing  -> (ValVoid, addError (variable_not_found ++ show ident) state)
 
 tryToGetValFromState :: Ident -> MyState -> Maybe Val
 tryToGetValFromState ident state = snd (tryToGetValInfoForIdent ident state)
@@ -88,11 +88,11 @@ tryToGetValInfoForIdent ident state = case state of
     Bad s -> (Nothing, Nothing)
 
 changeValInState :: Ident -> Val -> MyState -> MyState
-changeValInState ident val state = case (tryToGetValInfoForIdent ident state) of
+changeValInState ident val state = case tryToGetValInfoForIdent ident state of
     (Just loc, Just oldVal) -> case state of
         Ok  (StateVL env vals i) -> Ok (StateVL env (Data.Map.insert loc val vals) i)
         Bad s                    -> state
-    _ -> Bad $ variable_not_found ++ (show ident) ++ " State: " ++ (show state)
+    _ -> Bad $ variable_not_found ++ show ident ++ " State: " ++ show state
 
 
 -- This function will remove all useless pairs from vals

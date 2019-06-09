@@ -13,16 +13,20 @@
   - add location printing - SKIPPED
   - not only 'Type mismatch' message (bad/badArgs.vl) - DONE
 
-- Fixes in typechecker - 2.5H
+- Fixes in typechecker - 2.5H - DONE
   - void argument decalaration (should be impossible) - 1H - DONE
   - the same name args - DONE
   - function which returns some value - DONE
     - good example - DONE
     - bad example (trying to save int return value to string variable) - DONE
-  - unexistent fun arg using - 1H - TODO
-  - any errors in fun statements - TODO
+  - unexistent fun arg using - 1H - DONE
+  - any errors in fun statements - DONE
+  - Fix recursive functions - DONE
+
+- Today
+- Fixes in interpreterUtils
+  - Fix return inside if or for statement
   - Fix the following code (it goes throw TypeChecker) - 1H
-    !! Analyse what should be done in the following code
     function rec(int x) {
                 if (x > 1) {
                     print('a');
@@ -32,9 +36,11 @@
     int x;
     print(rec(10)); // <- It prints ValVoid
 
+- Today
 - Lists - 1H
   - add append, head and tail functions
 
+- Today
 - Dicts - 1H
   - add set function
 
@@ -44,8 +50,8 @@
   - Make examples work - 1H
   - Fix static binding - 3H
 
-  - Variants
-    - testVariant(testVar3); should raise a dynamic error
+- Variants
+  - testVariant(testVar3); should raise a dynamic error
 
 
 Done :) - Not yet ;)

@@ -64,7 +64,7 @@ runStatements (stm : tail) = do
     runStatement stm
     runStatements tail
 
--- This function takes additional functional params for processing statement wheni tgoes into scopes
+-- This function takes additional functional param for processing statement when it goes into scopes
 runStatementHelp
     :: Stm -> (Stm -> State MyState Val) -> ([Stm] -> State MyState Val) -> State MyState Val
 runStatementHelp stm singleStmRunFunction multiStmRunFunction = do
@@ -95,7 +95,9 @@ runStatementHelp stm singleStmRunFunction multiStmRunFunction = do
                 return ValNone
             StmIf exp stm -> do
                 valCond <- runExpEvaluation exp
-                if valCond == ValBool True then singleStmRunFunction stm else return ValNone
+                if valCond == ValBool True
+                    then singleStmRunFunction stm
+                    else return ValNone
             StmIfElse exp stmIf stmElse -> do
                 valCond <- runExpEvaluation exp
                 if valCond == ValBool True
@@ -310,9 +312,6 @@ checkDividingByZero :: Exp -> State MyState ()
 checkDividingByZero exp = do
     val <- runExpEvaluation exp
     Control.Monad.when (val == ValInt 0) $ put (Bad divide_by_zero)
-    -- if val == ValInt 0 
-    --     then put (Bad divide_by_zero)
-    --     else return ()
 
 addFunArgsToScope :: [Arg] -> [Val] -> State MyState ()
 addFunArgsToScope []                         []               = return ()

@@ -1,0 +1,7 @@
+function test() {
+  int a;
+  int b;
+  char c;
+  c = a + b;
+  return 123;
+}

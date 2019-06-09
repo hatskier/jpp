@@ -1,7 +1,7 @@
 function test(int x) {
   if (x > 12) {
-    return "Some string";
+    return 'a';
   } else {
-    return "Some int";
+    return 1;
   }
 };
