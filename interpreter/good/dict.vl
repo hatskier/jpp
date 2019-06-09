@@ -17,3 +17,18 @@ function testDictKey(dict(int, list(int)) dictTest, int key) {
 testDictKey(d, 1);
 testDictKey(d, 2);
 testDictKey(d, 10);
+
+dict(int, int(int, int)) d2;
+int x;
+x = 123;
+d2[1 + 1] = function(int a, int b) {return a + b};
+d2[x] = function(int a, int b) {return a * b};
+
+int(int, int) f;
+f = d2[2];
+print("Should print 5: ");
+print(f(2, 3)); // should print 5
+print("\n");
+f = d2[123];
+print("Should print 6: ");
+print(f(2, 3)); // should print 6

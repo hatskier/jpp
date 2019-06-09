@@ -1,0 +1,9 @@
+var(a => int, b => dict(int, int)) testVar;
+
+testVar = var(@a, 123);
+
+match (testVar) {
+  :a(smth) {
+    print(smth + 100);
+  }
+}

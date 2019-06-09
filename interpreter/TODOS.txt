@@ -35,26 +35,23 @@
     int x;
     print(rec(10)); // <- It prints ValVoid - DONE
 
-- Lists - 1H
+- Lists - 1H - DONE
   - add append, head and tail functions - DONE
-  - implement good examples - IN PROGRESS
-  - add bad examples for types
+  - implement good examples - DONE
+  - add bad examples for types - DONE
     - for ":"
     - for append
   
 
-- Today
-- Dicts - 1H
-  - add set function
+- Dicts - 1H - DONE
+  - add examples
+
+- Variants - DONE
 
 - Variables and context 2-5H
   - Add more examples - 1H
     - more info in mail (nr 9)
   - Make examples work - 1H
   - Fix static binding - 3H
-
-- Variants
-  - testVariant(testVar3); should raise a dynamic error
-
 
 Done :) - Not yet ;)
