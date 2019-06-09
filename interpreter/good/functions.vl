@@ -1,37 +1,41 @@
-// TEST FUNCTIONS
+function assert(bool cond) {
+	if (cond) {
+		print("OK!\n");
+	} else {
+		print("ASSERTION FAILED :(\n");
+	}
+};
 
 // Simple functions tests
 
-function intPrinting(int a) {
-	print(a);
-	print("\n");
+function sum(int a, int b) {
+	return a + b;
 };
-
-print("It should print 1000: ");
-intPrinting(1000);
-
+assert(sum(12, 18) == 30);
+assert(sum(10, 5) == 15);
 
 
-function increment(int a) {
+function incr(int a) {
 	return ++a;
 };
-print("It should print 1001: ");
-print(increment(1000));
-print("\n");
+assert(incr(10) == 11);
+assert(incr(20) == 21);
 
 // Complex functions tests
-int(int, char) repeat;
-repeat = function(int times, char c) {
+int globalCounter;
+globalCounter = 0;
+int(int) repeat;
+repeat = function(int times) {
 	while (times > 0) {
-		print(c);
 		times--;
+		globalCounter++;
 	};
 	return 0;
 };
-
-print("It should print: xxxxx: ");
-repeat(5, 'x');
-print("\n");
+int result;
+result = repeat(10);
+assert(result == 0);
+assert(globalCounter == 10);
 
 // complex test with function objects (js -like)
 function mult(int x, int y) {
@@ -43,27 +47,23 @@ plus = function(int x, int y) {
 	return x + y;
 };
 
+// TODO alex fix this test
 function change(int(int, int) f, int z, int q) {
+	if (false) {
+		return 12;
+	};
 	return f(z, q);
 };
 
-print("It should print 20: ");
-print(change(mult, 4, 5));
-print("\n");
-
-print("It should print 9: ");
-print(change(plus, 4, 5));
-print("\n");
-
+assert(change(mult, 4, 5) == 20);
+assert(change(plus, 4, 5) == 9);
 
 int rectangleLength;
 function testRectangleLength(int a, int b) {
 	return (a + b) * 2;
 };
 rectangleLength = testRectangleLength(3, 4);
-print("It should print 14: ");
-print(rectangleLength);
-print("\n");
+assert(rectangleLength == 14);
 
 // Multiple returns
 function testBar() {
@@ -71,11 +71,7 @@ function testBar() {
 	return 2;
 	return 3;
 };
-print("It should print 1: ");
-print(testBar());
-print("\n");
-
-// Returns in blocksm
+assert(testBar() == 1);
 
 function testFoo(int x) {
 	if (x > 10) {
@@ -85,21 +81,18 @@ function testFoo(int x) {
 	}
 };
 
-print("It should print 123: ");
-print(testFoo(11));
-print("\n");
-print("It should print 0: ");
-print(testFoo(1));
-print("\n");
+assert(testFoo(11) == 123);
+assert(testFoo(1) == 0);
 
-print("Recursion test\n");
+int globalCounter2;
+globalCounter2 = 0;
 function rec(int x) {
 	if (x > 1) {
-			print(".");
+			globalCounter2++;
 			return rec(x - 1);
 	} else {
 		return 3;
 	}
 };
-print("It should print ...3: ");
-print(rec(4));
+assert(rec(4) == 3);
+assert(globalCounter2 == 3);

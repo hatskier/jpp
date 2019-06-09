@@ -14,6 +14,9 @@ import           Data.List                      ( sort
 import           Data.Set                       ( Set
                                                 , fromList
                                                 )
+import           Data.Maybe                     ( Maybe
+                                                , isJust
+                                                )
 import           AbsVarlang
 import           VarlangState
 import           ErrM
@@ -46,6 +49,7 @@ too_many_args = ": too many arguments"
 too_few_args = ": too few arguments"
 list_parser_only_for_lists = "operator : can be used only with lists"
 list_append_only_for_lists = "method append can be used only with lists"
+variable_already_declared = "Variable with the same name is already declared in current scope"
 
 -- help variables
 typeCheckerStartState = [Data.Map.empty]
@@ -109,7 +113,8 @@ checkStatement stm state = case stm of
             stateWithFunction = case funRetType of
                 Found t  -> return $ addFunctionToTypeCheckerState funName t argTypes state
                 NotFound -> return $ addFunctionToTypeCheckerState funName Void argTypes state
-                _        -> Bad function_return_conflict
+                -- TODO alex
+                res        -> Bad $ function_return_conflict ++ show res
             listForMap = map (\(ArgL t ident) -> (ident, t)) args
             newState   = addFunctionToTypeCheckerState funName
                                                        Void
@@ -124,10 +129,14 @@ checkStatement stm state = case stm of
     RetVoidStm -> Ok state
 
 checkStmDecl :: Type -> [Ident] -> TypeCheckerState -> CheckStatementResponse
-checkStmDecl t identifiers state = return (newScope : tail state)
-  where
-    newScope = foldl insertVar (head state) identifiers
-    insertVar scope name = Data.Map.insert name t scope
+checkStmDecl t identifiers state = if alreadyInHeadScope
+    then Bad variable_already_declared
+    else return (newScope : tail state)
+      where
+        alreadyInHeadScope = foldl isInScope False identifiers
+        isInScope acc ident = isJust (Data.Map.lookup ident (head state)) || acc
+        newScope = foldl insertVar (head state) identifiers
+        insertVar scope name = Data.Map.insert name t scope
 
 addFunctionToTypeCheckerState :: String -> Type -> [Type] -> TypeCheckerState -> TypeCheckerState
 addFunctionToTypeCheckerState funName funRetType argTypes state =
@@ -265,7 +274,7 @@ multiCompareComplexTypes [] _ = Bad too_many_args
 multiCompareComplexTypes _ [] = Bad too_few_args
 
 compareComplexTypes :: Type -> Type -> Err Type
-compareComplexTypes (Var  _ ) (Var  t ) = return (Var t) -- TODO prior LOW - check for the ident
+compareComplexTypes (Var  _ ) (Var  t ) = return (Var t)
 compareComplexTypes (List t1) (List t2) = case (t1, t2) of
     (Void, _   ) -> return (List t2)
     (_   , Void) -> return (List t1)
@@ -349,7 +358,7 @@ checkIsVarType exp identifier state = getType exp state >>= \t -> case t of
         then return Bool
         else Bad (variant_def_not_found ++ show identifier)
       where
-        exists = foldl (\acc (VarDL ident _) -> ident == identifier && acc) False varDeclarations
+        exists = foldl (\acc (VarDL ident _) -> ident == identifier || acc) False varDeclarations
     _ -> Bad $ type_mismatch ++ "is not a variant"
 
 checkListType :: [Exp] -> TypeCheckerState -> GetTypeResponse

@@ -1,9 +1,5 @@
 # Varlang
 
-### Opis nalezy jeszcze dopracować
-
-Aliaksei Suvorau 374118
-
 Opis języka Varlang oraz haskell-owej implementacji interpretera dla niego
 
 -- OPIS
@@ -40,6 +36,7 @@ Opis języka Varlang oraz haskell-owej implementacji interpretera dla niego
 
 	-- match
 		sprawdzenie różnych możliwych opcji dla variantu
+		jeśli zostaną wymienione nie wszystkie przypadki - type checker zwróci błąd
 		przykład:
 			var(a => int, b => dict(int, int)) testVar1, testVar2;
 			testVar1 = var(@a, 123);
@@ -73,17 +70,15 @@ Opis języka Varlang oraz haskell-owej implementacji interpretera dla niego
 			2 : 'b',
 			3 : 'c'
 		};
+		dTest[5] = 'x'; // ustawi wartość w słowniku
 		print(dTest[2]); // wypisze b
 
 -- INSTRUKCJE DLA LIST
-	Dla list używamy instrukcji for
-
-	Przykład instrukcji for:
-		list(int) l;
-		l = [1,2,3,4,5];
-		for (int x in l) {
-			print(x + 10);
-		}; // wypisze 1112131415
+	(Przykłady są w pliku good/list.vl)
+	Dla list używamy następujące instrukcji
+		- append (dla dodawania na początek listy)
+		- operator : (dla wyliczania głowy i ognoa listy)
+		- for (pozwala iterować się po liście)
 
 -- WYPISYWANIE
 	Varlang posiada wbudowany mechanizm do wypisywania na standardowe wyjście za pomocą wbudowanej instrukcji "print".
@@ -104,6 +99,7 @@ Opis języka Varlang oraz haskell-owej implementacji interpretera dla niego
 			};
 			print('\n');
 		};
+
 -- TYPY
 
 	Varlang ma następne wbudowane typy:
@@ -119,13 +115,14 @@ Opis języka Varlang oraz haskell-owej implementacji interpretera dla niego
 
 	Język posiada statyczne typowanie - czyli przed wykonaniem interpreter sprawdza całe ciało programu i w przypadku błędów wypisuje je na standardowe wyjśćie diagnostyczne.
 
-	TypeChecker - moduł do sprawdzania typów sprawdz zgodność typów dla wszystkich elementów (dotyczy również funkcji, list, słowników -- przechodzi on całe drzewo programu)
+	TypeChecker - moduł do sprawdzania typów sprawdza zgodność typów dla wszystkich elementów (dotyczy również funkcji, list, słowników -- przechodzi on całe drzewo programu)
 
 -- FUNKCJE
+  Przykłady są w pliku good/functions.vl
 
 	Język ma funkcję, które mogą zwracać albo nie zwracać (typ void) wynik.
 
-	Funkcje przyjmują 
+	Funkcje przyjmują argumenty (w deklaracji funkcji typy powinny mieć wskazane nazwy oraz typy)
 
 	Funkcje obsługują rekurencyjne wywołania.
 	Przykład
@@ -155,7 +152,6 @@ Opis języka Varlang oraz haskell-owej implementacji interpretera dla niego
 
 -- PRZYKŁADY KODU
 	Przykłady są w katalogach bad i good z komentarzami
-
 
 -- OPIS IMPLEMENTACJI
 	Rozwiązanie składa się z kilku części:

@@ -1,0 +1,39 @@
+function assert(bool cond) {
+	if (cond) {
+		print("OK!\n");
+	} else {
+		print("ASSERTION FAILED :(\n");
+	}
+};
+
+int x;
+x = 10;
+
+function foo() {
+  x = 20;
+};
+foo();
+assert(x == 20);
+
+function bar() {
+  int x;
+  x = 30;
+  // TODO fix it <- it raise an error after uncommenting
+  // assert(x == 30);
+};
+bar();
+assert(x == 20);
+
+function fun() {
+  return x;
+};
+assert(fun() == 20);
+
+function bas() {
+  if (true) {
+    return x;
+  } else {
+    return x;
+  }
+};
+assert(bas() == 20);

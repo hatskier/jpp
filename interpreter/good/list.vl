@@ -1,3 +1,11 @@
+function assert(bool cond) {
+	if (cond) {
+		print("OK!\n");
+	} else {
+		print("ASSERTION FAILED :(\n");
+	}
+};
+
 list(int(int, int)) l;
 
 function plus(int a, int b) {
@@ -13,67 +21,31 @@ function mult(int a, int b) {
 	return a * b;
 };
 
-
-function printLn(list(char) str) {
-	for (char c in str) {
-		print(c);
-	};
-	print("\n");
-};
-
-l = [plus, minus, mult];
-
-list(list(char)) names;
-names = [['p', 'l', 'u', 's'], ['m', 'i', 'n', 'u', 's'], ['m', 'u', 'l', 't']];
-
-function testFun(int(int, int) f, list(char) name, int x, int y) {
-	print("Test fun with name: ");
-	printLn(name);
-	print(x);
-	print(" ");
-	print(y);
-	print(" res: ");
-	print(f(x, y));
-	print("\n");
-	return;
-};
-
+l = [plus, minus];
+l.append(mult);
 int counter;
 counter = 0;
-for (int(int, int) f in l) {
-	int counterInside;
-	counterInside = 0;
-	for (list(char) name in names) {
-		if (counter == counterInside) {
-			testFun(f, name, 10 + counter, 10 + counter);
+for (int(int, int) fun in l) {
+	if (counter == 0) {
+		assert(fun(3, 4) == 12);
+	} else {
+		if (counter == 1) {
+			assert(fun(3, 4) == 7);
+		} else {
+			assert(fun(3, 4) == (3 - 4));
 		};
-		counterInside++;
 	};
 	counter++;
 };
 
-function printList(list(int) l) {
-	print("[");
-	for (int elem in l) {
-		print(elem);
-		print(",");
-	};
-	print("]\n");
-};
 
-print("Testing operator : for list parsing\n");
 list(int) intlist;
 intlist = [1,2,3,4];
 head:tail = intlist;
-print("Head (should be 1): ");
-print(head);
-print(" Tail (should be [2,3,4,]): ");
-printList(tail);
-print("\n");
+assert(head == 1);
+assert(tail == [2,3,4]);
 
-print("Append new element to list");
 list(int) l123;
 l123 = [1,2,3,4];
 l123.append(5);
-print("Should be equal: [5,1,2,3,4,]: ");
-printList(l123);
+assert(l123 == [5,1,2,3,4]);

@@ -1,2 +1,0 @@
-// It doesn't have string type, but supports printing string labels int htat way
-print("Hello, world!");

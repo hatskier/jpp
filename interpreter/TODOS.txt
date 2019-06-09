@@ -49,9 +49,26 @@
 - Variants - DONE
 
 - Variables and context 2-5H
-  - Add more examples - 1H
-    - more info in mail (nr 9)
-  - Make examples work - 1H
-  - Fix static binding - 3H
+  - Variable with the same name checking - DONE
+  - Make functions work as good as blocks - DONE
+  - Add examples for przeslanianie - SKIPPED
 
-Done :) - Not yet ;)
+- Refactor tests - DONE
+    - Create test function like assert
+    - Add it to all good examples (if possible)
+
+- Update README - DONE
+    - Add manual for code compilation and running
+    - Find and fix errors
+    - Describe
+        - Dicts
+        - Lists
+        - Variants
+        - functions
+            - lambda functions
+        - Type checks
+        - Implementation
+
+- Fix tests - TODO
+
+Done :) - Not yet, almost Done ;)

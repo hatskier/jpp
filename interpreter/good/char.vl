@@ -1,16 +1,13 @@
+function assert(bool cond) {
+	if (cond) {
+		print("OK!\n");
+	} else {
+		print("ASSERTION FAILED :(\n");
+	}
+};
+
 char c;
 c = 'a';
 
-print(c);
-
-if (c == 'a') {
-	print("\nOK");
-} else {
-	print("\nErr");
-};
-
-if (c != 'b') {
-	print("\nOK");
-} else {
-	print("\nErr");
-}
+assert(c == 'a');
+assert(c != 'b');

@@ -1,32 +1,35 @@
-// If else tests
-print("It should print true: ");
-if (true) {
-	print("true");
+function assert(bool cond) {
+	if (cond) {
+		print("OK!\n");
+	} else {
+		print("ASSERTION FAILED :(\n");
+	}
 };
 
-print("\n");
+// If else tests
+int checker;
+checker = 10;
+if (true) {
+	checker = 123;
+};
+assert(checker == 123);
 
 bool x;
 x = false;
-print("It should print x: ");
 if (!x) {
-	print("x")
+	checker = 321;
 };
-
-print("\n");
+assert(checker == 321);
 
 if (5 > 4) {
-	print("Ok\n");
+	checker = 789;
 } else {
-	print("Error");
+	checker = 987;
 };
+assert(checker == 789);
 
-int x;
-x = 10;
-x++;
+int x2;
+x2 = 10;
+x2++;
 
-if (x == 11) {
-	print("OK\n");
-} else {
-	print("Error");
-}
+assert(x2 == 11);

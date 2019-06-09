@@ -1,3 +1,11 @@
+function assert(bool cond) {
+	if (cond) {
+		print("OK!\n");
+	} else {
+		print("ASSERTION FAILED :(\n");
+	}
+};
+
 // Test math operations
 int a, b, c, d;
 
@@ -6,38 +14,16 @@ b = 20;
 c = 300;
 d = 500;
 
-function testEqVal(int x, int target) {
-	if (x == target) {
-		print("It should print: ");
-		print(target);
-		print(" ");
-		print(x);
-		print("\n");
-	} else {
-		print("Error");
-	};
-};
-
-function testValComapre(int x, int compare) {
-	print (x);
-	if (x > compare) {
-		print(">");
-	} else {
-		if (x < compare) {
-			print("<");
-		} else {
-			print("=");
-		}
-	};
-	print(compare);
-	print("\n");
-};
-
-list(int) l;
-l = [a, b, c, d];
-
-for (int x in l) {
-	testEqVal(x, x);
-	testValComapre(x, c);
-};
-
+assert(a == a);
+assert(b == b);
+assert(d == d);
+assert(a < b);
+assert(d > c);
+assert(b <= c);
+assert(12 * 12 == 144);
+assert(a * b == 200);
+assert(1000 < 12 * 10 * 10);
+a++;
+assert(a == 11);
+a *= 3;
+assert(a == 33);

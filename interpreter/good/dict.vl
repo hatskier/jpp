@@ -1,23 +1,35 @@
-dict(int, list(int)) d;
-
-d[1] = [1,2,3];
-d[2] = [10,20,30];
-d[10] = [9,8,7];
-
-function testDictKey(dict(int, list(int)) dictTest, int key) {
-	print(key);
-	print(" ");
-	for (int x in dictTest[key]) {
-		print(x);
-		print(" ");
-	};
-	print("\n");
+function assert(bool cond) {
+	if (cond) {
+		print("OK!\n");
+	} else {
+		print("ASSERTION FAILED :(\n");
+	}
 };
 
-testDictKey(d, 1);
-testDictKey(d, 2);
-testDictKey(d, 10);
+// Simple dict
+dict(int, int) simpleDict;
+simpleDict = {
+	1: 2,
+	2: 4,
+	4: 8
+};
+simpleDict[8] = 16;
+assert(simpleDict[1] == 2);
+assert(simpleDict[2] == 4);
+assert(simpleDict[4] == 8);
+assert(simpleDict[8] == 16);
 
+// Values as expressions
+dict(int, list(int)) d;
+d = {
+	1: [1,2,3],
+	2: [7,8,9]
+};
+assert(d[1] == [1,2,3]);
+assert(d[2] == [7,8,9]);
+
+
+// Keys as expressions
 dict(int, int(int, int)) d2;
 int x;
 x = 123;
@@ -26,9 +38,6 @@ d2[x] = function(int a, int b) {return a * b};
 
 int(int, int) f;
 f = d2[2];
-print("Should print 5: ");
-print(f(2, 3)); // should print 5
-print("\n");
+assert(f(2, 3) == 5);
 f = d2[123];
-print("Should print 6: ");
-print(f(2, 3)); // should print 6
+assert(f(2, 3) == 6); // should print 6

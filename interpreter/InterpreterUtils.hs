@@ -135,14 +135,12 @@ runStatementHelp stm singleStmRunFunction multiStmRunFunction = do
                     state   <- get
                     case state of
                         Ok (StateVL env _ _) -> do
-                            -- return ()
                             singleStmRunFunction (StmDecl (DeclL t idents))
                             if isList valList
-                            then
-                                runStatementsForVals (head idents)
-                                                     (getValList valList)
-                                                     stmts
-                                                     multiStmRunFunction
+                            then runStatementsForVals (head idents)
+                                                      (getValList valList)
+                                                      stmts
+                                                      multiStmRunFunction
                             else
                                 do
                                     modify $ addError $ for_statement_not_for_list ++ show valList
@@ -268,6 +266,7 @@ runExpEvaluation exp = do
                             Ok (StateVL env _ _) -> do
                                 addFunArgsToScope args vals
                                 res <- runFunStatements funStmts
+                                revertState env
                                 case res of
                                     ValNone -> return ValVoid
                                     _       -> return res

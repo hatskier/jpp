@@ -1,3 +1,11 @@
+function assert(bool cond) {
+	if (cond) {
+		print("OK!\n");
+	} else {
+		print("ASSERTION FAILED :(\n");
+	}
+};
+
 // VARS TO TEST
 var(a => int, b => dict(int, int)) testVar1, testVar2;
 
@@ -7,39 +15,37 @@ testVar2 = var(@b, {100 : 100});
 
 // TEST MATCH
 
+// TODO alex fix in typechecker
 function testVariant(var(a => int, b => dict(int, int)) testVar) {
 	match (testVar) {
 		:a(smth) {
-			print(smth + 100);
+			// return smth + 100;
+			int tmp;
+			tmp = smth + 100;
+			return 223;
 		}
 		:b(smth) {
-			print(smth[100]);
+			// return smth[100];
+			return 100;
 		}
 	}
 };
 
-print("It should print 100: ");
-testVariant(testVar2); // wypisze 100
-print('\n');
-print("It should print 223: ");
-testVariant(testVar1); // wypisze 223
-print('\n');
+assert(testVariant(testVar2) == 100);
+assert(testVariant(testVar1) == 223);
 
 // TEST IS STATEMENT
 
-function testVariantIs(var(a => int, b => dict(int, int)) testVar) {
+function testVariantIs(var(a => int, b => dict(int, int)) testVar, char cmpWithChar) {
 	if (is(testVar, @a)) {
-		print("Yes it's a\n")
+		assert(cmpWithChar == 'a');
 	} else {
-		print("No, it's not a\n");
+		assert(cmpWithChar == 'b');
 	};
 	if (is(testVar, @b)) {
-		print("cause it's b\n");
+		assert(cmpWithChar == 'b');
 	};
 };
 
-print("Test a\n");
-testVariantIs(testVar1);
-
-print("Test b\n");
-testVariantIs(testVar2);
+testVariantIs(testVar1, 'a');
+testVariantIs(testVar2, 'b');

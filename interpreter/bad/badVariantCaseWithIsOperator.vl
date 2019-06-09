@@ -1,0 +1,7 @@
+var(a => int, b => dict(int, int)) testVar;
+
+testVar = var(@a, 123);
+
+if (is(testVar, @c)) {
+  print("Cant go here");
+};
