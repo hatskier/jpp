@@ -65,21 +65,25 @@ print("It should print 14: ");
 print(rectangleLength);
 print("\n");
 
-// Returns in blocks
+// Multiple returns
+function testBar() {
+	return 1;
+	return 2;
+	return 3;
+};
+print("It should print 1: ");
+print(testBar());
+print("\n");
+
+// Returns in blocksm
+
 function testFoo(int x) {
 	if (x > 10) {
-		print("------YEAAHHH-------");
 		return 123;
+	} else {
+		return 0;
 	}
 };
-
-// function testFoo(int x) {
-// 	if (x > 10) {
-// 		return 123;
-// 	} else {
-// 		return 0;
-// 	}
-// };
 
 print("It should print 123: ");
 print(testFoo(11));
@@ -88,19 +92,14 @@ print("It should print 0: ");
 print(testFoo(1));
 print("\n");
 
-// TODO add some recursion tests
 print("Recursion test\n");
-// function rec(int x) {
-// 	if (x > 1) {
-// 			print('a');
-// 			int s;
-// 			// s = rec(x - 1);
-// 			// return rec(x - 1);
-// 			return 10;
-// 	} else {
-// 		return 3;
-// 	}
-// };
-// // int x;
-// print(rec(10));
-// print(x); // <- It prints ValVoid
+function rec(int x) {
+	if (x > 1) {
+			print(".");
+			return rec(x - 1);
+	} else {
+		return 3;
+	}
+};
+print("It should print ...3: ");
+print(rec(4));

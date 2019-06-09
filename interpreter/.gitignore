@@ -26,5 +26,12 @@ TypeChecker.hi
 TypeChecker.o
 VarlangState.hi
 VarlangState.o
-interpreter
 
+AbsVarlang.hs.bak
+DocVarlang.txt.bak
+LexVarlang.x.bak
+ParVarlang.y.bak
+PrintVarlang.hs.bak
+SkelVarlang.hs.bak
+
+interpreter

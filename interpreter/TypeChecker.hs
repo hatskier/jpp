@@ -44,6 +44,8 @@ function_cant_have_void_args = ": function can not have void arguments"
 repeated_arg_names = ": function can not have arguments with repeated names"
 too_many_args = ": too many arguments"
 too_few_args = ": too few arguments"
+list_parser_only_for_lists = "operator : can be used only with lists"
+list_append_only_for_lists = "method append can be used only with lists"
 
 -- help variables
 typeCheckerStartState = [Data.Map.empty]
@@ -61,14 +63,21 @@ checkStatements (stm : stmts) state =
 
 checkStatement :: Stm -> TypeCheckerState -> CheckStatementResponse
 checkStatement stm state = case stm of
-    StmDecl (DeclL t identifiers) -> return (newScope : tail state)
-      where
-        newScope = foldl insertVar (head state) identifiers
-        insertVar scope name = Data.Map.insert name t scope
+    StmDecl (DeclL t identifiers) -> checkStmDecl t identifiers state
     StmBlock statements ->
         checkStatements statements (Data.Map.empty : state) >>= \state -> return (tail state)
     StmAss name exp -> getTypeForVariable name state >>= \varType -> getType exp state
         >>= \expType -> compareComplexTypes expType varType >>= \_ -> return state
+    StmParseList headIdent tailIdent exp ->
+        getType exp state >>= \expType -> case expType of
+            List t -> do
+                newState <- checkStmDecl t [headIdent] state
+                checkStmDecl (List t) [tailIdent] newState
+            _ -> Bad $ type_mismatch ++ list_parser_only_for_lists
+    StmAppend ident _ ->
+        getTypeForVariable ident state >>= \varType -> case varType of
+            List _ -> return state
+            _ -> Bad $ type_mismatch ++ list_append_only_for_lists
     StmDictAss identifier exp1 exp2 ->
         getTypeForVariable identifier state >>= \dictType -> case dictType of
             Dict keyType valType -> getType exp1 state >>= \t1 ->
@@ -114,6 +123,11 @@ checkStatement stm state = case stm of
     RetStm _   -> Ok state
     RetVoidStm -> Ok state
 
+checkStmDecl :: Type -> [Ident] -> TypeCheckerState -> CheckStatementResponse
+checkStmDecl t identifiers state = return (newScope : tail state)
+  where
+    newScope = foldl insertVar (head state) identifiers
+    insertVar scope name = Data.Map.insert name t scope
 
 addFunctionToTypeCheckerState :: String -> Type -> [Type] -> TypeCheckerState -> TypeCheckerState
 addFunctionToTypeCheckerState funName funRetType argTypes state =
@@ -152,12 +166,6 @@ getFunRetTypeForStatement stm state = case stm of
     StmMatch _ caseStmts ->
         getFunRetType (foldl (\acc (CaseStmL _ _ stmts) -> stmts ++ acc) [] caseStmts) state
     _ -> NotFound
-
--- checkFunStatement :: Stm -> TypeCheckerState -> CheckFunStatementResponse
--- checkFunStatement stm state = case stm of
---     RetStm _   -> Ok state
---     RetVoidStm -> Ok state
---     _          -> checkStatement stm state
 
 checkBoolExpWithStm :: Exp -> Stm -> TypeCheckerState -> CheckStatementResponse
 checkBoolExpWithStm exp stmt state = getType exp state >>= \expType ->

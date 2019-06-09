@@ -36,6 +36,8 @@ error_in_binary_int_evaluation = "Type error in binary int evaluation: "
 error_in_binary_bool_evaluation = "Type error in binary bool evaluation: "
 error_in_dict_assigning = "Error while trying to assign value to dictionary: "
 fun_call_error = "Trying to call object which is not a function: "
+error_in_list_appending = "Error while trying to append element to list: "
+error_in_list_parsing = "Error while trying to parse list to head and tail: "
 divide_by_zero = "Trying to divide by zero: "
 
 interpret :: Program -> MyState
@@ -44,12 +46,9 @@ interpret (ProgramL stmts) = execState (runStatements stmts) startStateVL
 
 runFunStatements :: [Stm] -> State MyState Val
 runFunStatements []           = return ValNone
-runFunStatements (stm : tail) = case stm of
-    RetStm exp -> runExpEvaluation exp
-    RetVoidStm -> return ValVoid
-    stm        -> do
-        val <- runFunStatement stm
-        if val == ValNone then runFunStatements tail else return val
+runFunStatements (stm : tail) = do
+    val <- runFunStatement stm
+    if val == ValNone && tail /= [] then runFunStatements tail else return val
 
 runFunStatement :: Stm -> State MyState Val
 runFunStatement stm = case stm of
@@ -78,9 +77,9 @@ runStatementHelp stm singleStmRunFunction multiStmRunFunction = do
                 case state of
                     Bad s                 -> return ValNone
                     Ok  (StateVL env _ _) -> do
-                        multiStmRunFunction stmts
+                        retVal <- multiStmRunFunction stmts
                         revertState env
-                        return ValNone
+                        return retVal
             StmAss ident exp -> do
                 val <- runExpEvaluation exp
                 modify (changeValInState ident val)
@@ -90,6 +89,23 @@ runStatementHelp stm singleStmRunFunction multiStmRunFunction = do
                 valVal <- runExpEvaluation expVal
                 runDictAssigning ident valKey valVal
                 return ValNone
+            StmAppend ident exp -> do
+                val <- runExpEvaluation exp
+                runAppendingToList ident val
+                return ValNone
+            StmParseList headIdent tailIdent exp -> do
+                expVal <- runExpEvaluation exp
+                case expVal of
+                    ValList listType (h : t) -> do
+                        declareVariables listType [headIdent]
+                        -- TODO alex change type for tail
+                        declareVariables (List listType) [tailIdent]
+                        modify (changeValInState headIdent h)
+                        modify (changeValInState tailIdent (ValList listType t))
+                        return ValNone
+                    _ -> do
+                        modify $ addError error_in_list_parsing
+                        return ValNone
             StmStepExp exp -> do
                 runExpEvaluation exp
                 return ValNone
@@ -194,6 +210,15 @@ runDictAssigning ident valKey valVal = do
             let newDictVal = ValDict (Data.Map.insert valKey valVal d)
             modify $ changeValInState ident newDictVal
         _ -> modify $ addError error_in_dict_assigning
+
+runAppendingToList :: Ident -> Val -> State MyState ()
+runAppendingToList ident val = do
+    valList <- runExpEvaluation (EVariable ident)
+    case valList of
+        ValList t l -> do
+            let newListVal = ValList t (val : l)
+            modify $ changeValInState ident newListVal
+        _ -> modify $ addError error_in_list_appending
 
 runExpsEvaluation :: [Exp] -> State MyState [Val]
 runExpsEvaluation []           = return []

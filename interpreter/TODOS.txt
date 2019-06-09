@@ -23,10 +23,9 @@
   - any errors in fun statements - DONE
   - Fix recursive functions - DONE
 
-- Today
-- Fixes in interpreterUtils
-  - Fix return inside if or for statement
-  - Fix the following code (it goes throw TypeChecker) - 1H
+- Fixes in interpreterUtils - DONE
+  - Fix return inside if or for statement - DONE
+  - Fix the following code (it goes throw TypeChecker) - 1H - DONE
     function rec(int x) {
                 if (x > 1) {
                     print('a');
@@ -34,11 +33,15 @@
                 } else {return 3;}
             };
     int x;
-    print(rec(10)); // <- It prints ValVoid
+    print(rec(10)); // <- It prints ValVoid - DONE
 
-- Today
 - Lists - 1H
-  - add append, head and tail functions
+  - add append, head and tail functions - DONE
+  - implement good examples - IN PROGRESS
+  - add bad examples for types
+    - for ":"
+    - for append
+  
 
 - Today
 - Dicts - 1H

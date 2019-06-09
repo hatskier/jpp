@@ -16,18 +16,20 @@ separator   Ident "," ;
 separator   Stm ";" ;
 
 --- Operators with side effects ---
-StmAss.     Stm   ::= Ident "=" Exp ;
-StmDictAss. Stm   ::= Ident "[" Exp "]" "=" Exp ;
-EIncrR.     Exp7  ::= Ident "++" ;
-EIncr.      Exp7  ::= "++" Ident ;
-EDecrR.     Exp7  ::= Ident "--" ;
-EDecr.      Exp7  ::= "--" Ident ;
-EIncrExp.   Exp7  ::= Ident "+=" Exp ;
-EDecrExp.   Exp7  ::= Ident "-=" Exp ;
-EDivExp.    Exp7  ::= Ident "/=" Exp ;
-EMulrExp.   Exp7  ::= Ident "*=" Exp ;
-EModrExp.   Exp7  ::= Ident "%=" Exp ;
-StmStepExp. Stm   ::= Exp;
+StmAss.        Stm   ::= Ident "=" Exp ;
+StmDictAss.    Stm   ::= Ident "[" Exp "]" "=" Exp ;
+StmAppend.     Stm   ::= Ident "." "append" "(" Exp ")" ;
+StmParseList.  Stm   ::= Ident ":" Ident "=" Exp ;
+EIncrR.        Exp7  ::= Ident "++" ;
+EIncr.         Exp7  ::= "++" Ident ;
+EDecrR.        Exp7  ::= Ident "--" ;
+EDecr.         Exp7  ::= "--" Ident ;
+EIncrExp.      Exp7  ::= Ident "+=" Exp ;
+EDecrExp.      Exp7  ::= Ident "-=" Exp ;
+EDivExp.       Exp7  ::= Ident "/=" Exp ;
+EMulrExp.      Exp7  ::= Ident "*=" Exp ;
+EModrExp.      Exp7  ::= Ident "%=" Exp ;
+StmStepExp.    Stm   ::= Exp;
 
 --- Constructions ---
 StmIf.      Stm     ::= "if" "(" Exp ")" Stm  ;
@@ -47,8 +49,6 @@ separator CaseStm "" ;
 --- Built-in functions ---
 StmPrint.   Stm  ::= "print" "(" Exp ")" ;
 StmPrintS.  Stm  ::= "print" "(" String ")" ;
-
-
 
 --- Types ---
 Int.        Type ::= "int" ;

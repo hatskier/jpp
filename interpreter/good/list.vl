@@ -50,4 +50,30 @@ for (int(int, int) f in l) {
 		counterInside++;
 	};
 	counter++;
-}
+};
+
+function printList(list(int) l) {
+	print("[");
+	for (int elem in l) {
+		print(elem);
+		print(",");
+	};
+	print("]\n");
+};
+
+print("Testing operator : for list parsing\n");
+list(int) intlist;
+intlist = [1,2,3,4];
+head:tail = intlist;
+print("Head (should be 1): ");
+print(head);
+print(" Tail (should be [2,3,4,]): ");
+printList(tail);
+print("\n");
+
+print("Append new element to list");
+list(int) l123;
+l123 = [1,2,3,4];
+l123.append(5);
+print("Should be equal: [5,1,2,3,4,]: ");
+printList(l123);
