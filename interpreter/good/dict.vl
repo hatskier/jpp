@@ -40,4 +40,4 @@ int(int, int) f;
 f = d2[2];
 assert(f(2, 3) == 5);
 f = d2[123];
-assert(f(2, 3) == 6); // should print 6
+assert(f(2, 3) == 6);

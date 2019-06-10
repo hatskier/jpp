@@ -15,14 +15,16 @@ function foo() {
 foo();
 assert(x == 20);
 
+int y;
+
 function bar() {
   int x;
   x = 30;
-  // TODO fix it <- it raise an error after uncommenting
-  // assert(x == 30);
+  y = x;
 };
 bar();
 assert(x == 20);
+assert(y == 30);
 
 function fun() {
   return x;

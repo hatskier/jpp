@@ -15,24 +15,27 @@ testVar2 = var(@b, {100 : 100});
 
 // TEST MATCH
 
-// TODO alex fix in typechecker
-function testVariant(var(a => int, b => dict(int, int)) testVar) {
-	match (testVar) {
-		:a(smth) {
-			// return smth + 100;
-			int tmp;
-			tmp = smth + 100;
-			return 223;
-		}
-		:b(smth) {
-			// return smth[100];
-			return 100;
-		}
+match (testVar1) {
+	:a(smth) {
+		assert(smth == 123);
+		int tmp;
+		tmp = smth + 100;
+	}
+	:b(smth) {
+		assert(false);
 	}
 };
 
-assert(testVariant(testVar2) == 100);
-assert(testVariant(testVar1) == 223);
+match (testVar2) {
+	:a(smth) {
+		assert(false);
+	}
+	:b(smth) {
+		assert(smth[100] == 100);
+	}
+};
+
+
 
 // TEST IS STATEMENT
 

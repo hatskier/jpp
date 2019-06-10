@@ -113,8 +113,7 @@ checkStatement stm state = case stm of
             stateWithFunction = case funRetType of
                 Found t  -> return $ addFunctionToTypeCheckerState funName t argTypes state
                 NotFound -> return $ addFunctionToTypeCheckerState funName Void argTypes state
-                -- TODO alex
-                res        -> Bad $ function_return_conflict ++ show res
+                _        -> Bad function_return_conflict
             listForMap = map (\(ArgL t ident) -> (ident, t)) args
             newState   = addFunctionToTypeCheckerState funName
                                                        Void
@@ -162,7 +161,7 @@ chooseBetterType t1 t2 = case (t1, t2) of
 
 getFunRetTypeForStatement :: Stm -> TypeCheckerState -> FunRetType
 getFunRetTypeForStatement stm state = case stm of
-    RetStm (EFunCall _ _) -> NotFound
+    RetStm (EFunCall _ _) -> Found Int
     RetStm exp -> case getType exp state of
         Ok  t -> Found t
         Bad s -> BadErr $ s ++ show exp

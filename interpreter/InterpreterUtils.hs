@@ -98,7 +98,6 @@ runStatementHelp stm singleStmRunFunction multiStmRunFunction = do
                 case expVal of
                     ValList listType (h : t) -> do
                         declareVariables listType [headIdent]
-                        -- TODO alex change type for tail
                         declareVariables (List listType) [tailIdent]
                         modify (changeValInState headIdent h)
                         modify (changeValInState tailIdent (ValList listType t))

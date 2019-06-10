@@ -47,11 +47,7 @@ plus = function(int x, int y) {
 	return x + y;
 };
 
-// TODO alex fix this test
 function change(int(int, int) f, int z, int q) {
-	if (false) {
-		return 12;
-	};
 	return f(z, q);
 };
 
